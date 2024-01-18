@@ -1,0 +1,134 @@
+---
+title: "Chi square distribution"
+output: html_document
+date: "2024-01-17"
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(shiny)
+```
+
+### Chi-square $\chi^2$ distribution
+
+Chi-square $\chi^2$ distributions are a family of continuous probability distributions. They’re widely used in hypothesis tests, including the chi-square goodness of fit test and the chi-square test of independence and categorical analysis.
+
+Very few real-world observations follow a chi-square distribution. The main purpose of chi-square distributions is hypothesis testing, not describing real-world distributions.
+
+
+
+```{r, echo=FALSE}
+shinyApp(
+
+  ui = fluidPage(
+ 
+            sliderInput("dfs",
+                        "Degrees of freedom:",
+                        min = 1,
+                        max = 20,
+                        value = 3),
+    plotOutput("distPlot")
+  ),
+
+  server = function(input, output) {
+    
+     
+    output$distPlot = renderPlot({
+ x <- rchisq(50000, df = input$dfs)
+hist(x, 
+     freq = FALSE,
+     xlim=c(0,50),
+     ylim=c(0, 0.3),
+     main= paste("chi square df =" , input$dfs) )
+curve(dchisq(x,df= input$dfs),from=0, to=50, n=5000,col='red',lwd=2, add=T)
+    }
+
+)
+  },
+
+  options = list(height = 500)
+
+)
+```
+
+
+
+### Relationship to the standard normal distribution
+
+Chi-square distributions are useful for hypothesis testing because of their close relationship to the standard normal distribution. 
+
+We will use the standard normal distribution to derive the pdf for chi square distribution with one degree of freedom. 
+
+Let random variable Y be defined as $Y = X^2$ where $X$ has normal distribution with mean 0 and variance 1 (that is $X \sim N(0, 1)$).
+$f_X(x) = \frac{1}{\sqrt{2 \pi}} e^{-\frac{x^2}{2}}$
+
+Then,\
+
+For $y < 0, f_Y(y) = P(Y < y) = 0$ and 
+
+For $y \ge 0$, 
+
+\begin{align*}
+ f_Y(y) &= P(Y < y) = P(X^2 < y) = P(|X| < y) = P(-\sqrt{y} < X < \sqrt{y}) \\
+ & = F_X(\sqrt{y}) - F_X(-\sqrt{y}) =  F_X(\sqrt{y}) - (1-F_X(\sqrt{y})) = 2 F_X(\sqrt{y}) -1  \\
+f_Y(y) &= \frac{d}{d y} F_Y(y) = 2 \frac{d}{d y} F_X(y) -0 = 2 \displaystyle \frac{d}{d y} \int_{-\infty}^{\sqrt{y}} \frac{1}{\sqrt{2 \pi}} e^{-\frac{t^2}{2}} dt \\
+&= 2 \frac{1}{\sqrt{2 \pi}} e^{-\frac{y}{2}} \sqrt{y}_y^{'} = 2 \frac{1}{\sqrt{2 \pi}} e^{-\frac{y}{2}} \frac{1}{2} y^{-\frac{1}{2}}\\ 
+&= \frac{1}{\sqrt{2} \Gamma(\frac{1}{2})} y^{-\frac{1}{2}} e^{-\frac{y}{2}}
+\end{align*}
+
+
+Note:
+
+For positive integer arguments, the gamma function coincides with the factorial. That is,  
+  
+  $\Gamma(n) = (n-1)!$    
+  
+  and hence
+\begin{align*}
+ \Gamma(1) & = 1 \\
+ \Gamma(2) & = 1  \\
+ \Gamma(3) & = 2 \\
+ \Gamma(4) & = 6 \\ 
+ \Gamma(5) & = 24
+\end{align*}
+
+and so on. For non-positive integers, the gamma function is not defined.
+
+A well-known formula, which is often used in probability theory and statistics, is the following:
+
+$\Gamma(\frac{1}{2}) = \sqrt{\pi}$, we will use Gamma function $ \Gamma(z)$ integral to prove:
+
+\begin{align*}
+ \Gamma(z) & = \int_0^{\infty} x^{z-1}  exp(-x) dx \\
+ \Gamma(\frac{1}{2}) & = \int_0^{\infty} x^{-\frac{1}{2}}  exp(-x) dx \\
+ &= 2 \int_0^{\infty}  exp(-t^2) dt, \quad \text{change of variable} t= x^{1/2} \\
+\end{align*}
+
+ 
+## Alternative proof directly using the change of variable formula
+
+The change of variable formula is used very often in deriving pdf. We have used it the above proof, and for a monotone transformation $y = g(x)$ the general formula is as following:
+
+\begin{align*}
+ f_Y(y) & = \sum_i f_X(g_i^{-1}(y)) \left | \frac{dg_i^{-1}(y)}{dy} \right |
+\end{align*}
+
+ In this case the change is not monotonic, because every value of $Y$ has two corresponding values of $X$ (one positive and negative). However, because of symmetry, both halves will transform identically, i.e.
+ 
+ \begin{align*}
+ f_Y(y) & = 2 f_X(g^{-1}(y)) \left | \frac{dg^{-1}(y)}{dy} \right |
+\end{align*}
+
+In this case, the transformation is: $x= g^{-1}(y) = \sqrt{y}$, and its derivative is $\frac{dg^{-1}(y)}{dy} = \frac{1}{2 \sqrt{y}}$.
+
+So here,
+
+ \begin{align*}
+ f_Y(y) & = 2 \frac{1}{ \sqrt{2 \pi}} e^{-y/2} \frac{1}{ \sqrt{2 y}} = \frac{1}{ \sqrt{2 \pi y}} e^{-y/2}
+\end{align*}
+
+And one gets the chi-squared distribution, noting the property of the gamma function: $\Gamma(1/2) = \sqrt{\pi}$
+
+
+
